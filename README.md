@@ -1,1 +1,11 @@
-# qBittorrent-autoremove
+# 首次运行
+
+'''
+python autoremove.py
+'''
+
+# 再次运行
+
+'''
+nohup python autoremove.py &
+'''
