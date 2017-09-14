@@ -3,12 +3,19 @@ from qbittorrent import Client
 import time
 import requests
 from time import sleep
+import ConfigParser
+import os
+import sys
 
 class my_qBittorrent(object):
-    def __init__(self,username,password):
+    def __init__(self,config):
+        self.config = config
+        username = self.config.get('global','webui_username')
+        password = self.config.get('global','webui_password')
+        webui_url = self.config.get('global','webui_url')
         self.torrentHash = []
         self.torrentData = []
-        self.client = Client('')
+        self.client = Client(webui_url)
         self.client.login(username, password)
         self.getTorrentInfo()
         self.getTorrentSeedTime()
@@ -60,18 +67,48 @@ class my_qBittorrent(object):
         return False
     
     def integratedFilterAndExecute(self,torrentHash,tacker = None):
+        seed_time = self.config.getint('filter','seeding_time')
         if not self.trackerFilter(torrentHash, tracker = tacker):
-            if self.seedTimeFilter(torrentHash, seedTime = 2):
+            if self.seedTimeFilter(torrentHash, seedTime = seed_time):
                 self.deleteTorrentPerm(torrentHash)
     
     def Traversal(self):
+        tracker = self.config.get('filter','exception_tracker')
         for torrentHash in self.torrentHash:
-            self.integratedFilterAndExecute(torrentHash)
+            self.integratedFilterAndExecute(torrentHash,tracker)
+
+def parserConfig(pathToConfig):
+    config = ConfigParser.SafeConfigParser()
+    
+    if os.path.isfile(pathToConfig):
+        config.read(pathToConfig)
+    else:
+        configDir = os.path.dirname(pathToConfig)
+        if not os.path.isdir(configDir):
+            os.makedirs(configDir)
+        
+        config.add_section('global')
+        config.set('global', 'webui_url', '')
+        config.set('global', 'webui_username', '')
+        config.set('global','webui_password','')
+        
+        config.add_section('filter')
+        config.set('filter', 'seeding_time', '')
+        config.set('filter','exception_tracker','')
+        
+        with open(pathToConfig,'w') as f:
+            config.write(f)
+            
+        print('Please edit the configuration file: %s' % pathToConfig)
+        sys.exit(2)
+        
+    return config
 
 def main():
+    config = parserConfig('~/.qBautoremove/config')
     while 1:
         try:
-            newclient = my_qBittorrent('','')
+            newclient = my_qBittorrent(config)
             newclient.Traversal()
         except requests.exceptions.ConnectionError:
                 continue
