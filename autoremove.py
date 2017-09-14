@@ -1,6 +1,8 @@
 # -*- coding: UTF-8 -*-
 from qbittorrent import Client
 import time
+import requests
+from time import sleep
 
 class my_qBittorrent(object):
     def __init__(self,username,password):
@@ -67,8 +69,13 @@ class my_qBittorrent(object):
             self.integratedFilterAndExecute(torrentHash)
 
 def main():
-    newclient = my_qBittorrent('','')
-    newclient.Traversal()
+    while 1:
+        try:
+            newclient = my_qBittorrent('','')
+            newclient.Traversal()
+        except requests.exceptions.ConnectionError:
+                continue
+        time.sleep(300)
     
 if __name__ == '__main__': main()
 
