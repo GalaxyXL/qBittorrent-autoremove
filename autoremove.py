@@ -78,12 +78,13 @@ class my_qBittorrent(object):
             self.integratedFilterAndExecute(torrentHash,tracker)
 
 def parserConfig(pathToConfig):
+    config_path = os.path.expanduser(pathToConfig)
     config = ConfigParser.SafeConfigParser()
     
-    if os.path.isfile(pathToConfig):
-        config.read(pathToConfig)
+    if os.path.isfile(config_path):
+        config.read(config_path)
     else:
-        configDir = os.path.dirname(pathToConfig)
+        configDir = os.path.dirname(config_path)
         if not os.path.isdir(configDir):
             os.makedirs(configDir)
         
