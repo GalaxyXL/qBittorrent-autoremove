@@ -6,7 +6,7 @@ class my_qBittorrent(object):
     def __init__(self,username,password):
         self.torrentHash = []
         self.torrentData = []
-        self.client = Client('http://')
+        self.client = Client('')
         self.client.login(username, password)
         self.getTorrentInfo()
         self.getTorrentSeedTime()
@@ -57,12 +57,22 @@ class my_qBittorrent(object):
             return True
         return False
     
-    def integratedFilter(self,torrentHash):
-        
-        
-        
-testClient = my_qBittorrent('','')
-testClient.Filter(seedTime=1)        
+    def integratedFilterAndExecute(self,torrentHash,tacker = None):
+        if not self.trackerFilter(torrentHash, tracker = tacker):
+            if self.seedTimeFilter(torrentHash, seedTime = 2):
+                self.deleteTorrentPerm(torrentHash)
+    
+    def Traversal(self):
+        for torrentHash in self.torrentHash:
+            self.integratedFilterAndExecute(torrentHash)
+
+def main():
+    newclient = my_qBittorrent('','')
+    newclient.Traversal()
+    
+if __name__ == '__main__': main()
+
+    
             
         
         
