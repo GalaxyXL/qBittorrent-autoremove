@@ -97,7 +97,7 @@ def parserConfig(pathToConfig):
         config.set('filter', 'seeding_time', '')
         config.set('filter','exception_tracker','')
         
-        with open(pathToConfig,'w') as f:
+        with open(config_path,'w') as f:
             config.write(f)
             
         print('Please edit the configuration file: %s' % pathToConfig)
