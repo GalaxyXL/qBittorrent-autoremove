@@ -53,7 +53,7 @@ class my_qBittorrent(object):
         if tracker:
             rawInfo = self.client.get_torrent_trackers(torrentHash)
             torrentTracker = rawInfo[0]['url']
-            if torrentTracker.find(tracker):
+            if tracker in torrentTracker:
                 return True
         return False
     
