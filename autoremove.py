@@ -53,7 +53,7 @@ class my_qBittorrent(object):
         if tracker:
             rawInfo = self.client.get_torrent_trackers(torrentHash)
             torrentTracker = rawInfo[0]['url']
-            if tracker in torrentTracker:
+            if torrentTracker.find(tracker):
                 return True
         return False
     
@@ -66,16 +66,38 @@ class my_qBittorrent(object):
             return True
         return False
     
-    def integratedFilterAndExecute(self,torrentHash,tacker = None):
+    def integratedFilterAndExecute(self,torrentHash,tacker = None, lowerLimit = None):
         seed_time = self.config.getint('filter','seeding_time')
-        if not self.trackerFilter(torrentHash, tracker = tacker):
-            if self.seedTimeFilter(torrentHash, seedTime = seed_time):
-                self.deleteTorrentPerm(torrentHash)
+        if not lowerLimit:
+            if not self.trackerFilter(torrentHash, tracker = tacker):
+                if self.seedTimeFilter(torrentHash, seedTime = seed_time):
+                    self.deleteTorrentPerm(torrentHash)
+                    
+        else:
+            if not self.trackerFilter(torrentHash, tracker = tacker):
+                if self.seedTimeFilter(torrentHash, seedTime = seed_time) and self.filterUploadSpeed(torrentHash, lowerLimit = lowerLimit):
+                    self.deleteTorrentPerm(torrentHash)
     
     def Traversal(self):
         tracker = self.config.get('filter','exception_tracker')
+        lowerLimit = self.config.get('filter','upload_speed')
         for torrentHash in self.torrentHash:
-            self.integratedFilterAndExecute(torrentHash,tracker)
+            self.integratedFilterAndExecute(torrentHash,tracker,lowerLimit = lowerLimit)
+
+    def getUploadSpeed(self,torrentHash):
+        torrentInfo = self.getSingleTorrentInfo(torrentHash)
+        torrentUpSpeed = torrentInfo['up_speed']
+        return torrentUpSpeed
+
+    def filterUploadSpeed(self,torrentHash,lowerLimit = None):
+        torrentUpSpeed = self.getUploadSpeed(torrentHash)
+        if lowerLimit:
+            if torrentUpSpeed < lowerLimit:
+                return True
+            else:
+                return False
+        return False
+    
 
 def parserConfig(pathToConfig):
     config_path = os.path.expanduser(pathToConfig)
@@ -96,6 +118,7 @@ def parserConfig(pathToConfig):
         config.add_section('filter')
         config.set('filter', 'seeding_time', '')
         config.set('filter','exception_tracker','')
+        config.set('filter','upload_speed')
         
         with open(config_path,'w') as f:
             config.write(f)
