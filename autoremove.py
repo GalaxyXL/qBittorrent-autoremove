@@ -118,7 +118,7 @@ def parserConfig(pathToConfig):
         config.add_section('filter')
         config.set('filter', 'seeding_time', '')
         config.set('filter','exception_tracker','')
-        config.set('filter','upload_speed')
+        config.set('filter','upload_speed','')
         
         with open(config_path,'w') as f:
             config.write(f)
